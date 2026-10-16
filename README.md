@@ -13,4 +13,3 @@ A very simple choose-your-own-adventure game written in Python. Pick a path thro
    ```
 
 When the game shows numbered choices, enter a number and press Enter.
-# Building-with-Copilot
