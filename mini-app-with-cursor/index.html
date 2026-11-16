@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tip Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f3f6f4;
+        --bg-accent: #e4ebe6;
+        --surface: rgba(255, 255, 255, 0.82);
+        --ink: #14201a;
+        --muted: #5a6b61;
+        --line: rgba(20, 32, 26, 0.12);
+        --accent: #0f766e;
+        --accent-soft: #ccfbf1;
+        --result: #0b3d36;
+        --shadow: 0 18px 50px rgba(20, 32, 26, 0.08);
+        --radius: 18px;
+        --font: "Outfit", sans-serif;
+      }
+
+      html[data-theme="dark"] {
+        --bg: #0d1512;
+        --bg-accent: #15201b;
+        --surface: rgba(22, 34, 29, 0.9);
+        --ink: #e8f0eb;
+        --muted: #9aada3;
+        --line: rgba(232, 240, 235, 0.12);
+        --accent: #2dd4bf;
+        --accent-soft: rgba(45, 212, 191, 0.14);
+        --result: #99f6e4;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font);
+        color: var(--ink);
+        background:
+          radial-gradient(900px 420px at 10% -10%, var(--accent-soft), transparent 55%),
+          radial-gradient(700px 380px at 100% 0%, var(--bg-accent), transparent 50%),
+          linear-gradient(160deg, var(--bg), var(--bg-accent));
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        transition: background 0.25s ease, color 0.25s ease;
+      }
+
+      .app {
+        width: min(100%, 420px);
+        background: var(--surface);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--line);
+        border-radius: calc(var(--radius) + 6px);
+        box-shadow: var(--shadow);
+        padding: 28px 24px 24px;
+        animation: rise 0.45s ease both;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+      }
+
+      .subtitle {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .theme-toggle {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--ink);
+        border-radius: 999px;
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+
+      .theme-toggle:hover {
+        background: var(--accent-soft);
+        transform: translateY(-1px);
+      }
+
+      .theme-toggle:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .theme-toggle svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .theme-toggle .icon-moon {
+        display: none;
+      }
+
+      html[data-theme="dark"] .theme-toggle .icon-sun {
+        display: none;
+      }
+
+      html[data-theme="dark"] .theme-toggle .icon-moon {
+        display: block;
+      }
+
+      form {
+        display: grid;
+        gap: 18px;
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+      }
+
+      label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--muted);
+      }
+
+      .input-wrap {
+        position: relative;
+      }
+
+      .prefix,
+      .suffix {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-weight: 500;
+        pointer-events: none;
+      }
+
+      .prefix {
+        left: 14px;
+      }
+
+      .suffix {
+        right: 14px;
+      }
+
+      input[type="number"] {
+        width: 100%;
+        appearance: textfield;
+        -moz-appearance: textfield;
+        border: 1px solid var(--line);
+        background: color-mix(in srgb, var(--bg) 70%, transparent);
+        color: var(--ink);
+        border-radius: 14px;
+        padding: 14px 16px;
+        font: inherit;
+        font-size: 1.05rem;
+        font-weight: 500;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input[type="number"].has-prefix {
+        padding-left: 34px;
+      }
+
+      input[type="number"].has-suffix {
+        padding-right: 36px;
+      }
+
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      input[type="number"]:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+      }
+
+      .tips {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .tip-btn {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--ink);
+        border-radius: 12px;
+        padding: 10px 0;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      }
+
+      .tip-btn:hover {
+        background: var(--accent-soft);
+      }
+
+      .tip-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #042f2e;
+      }
+
+      html:not([data-theme="dark"]) .tip-btn.active {
+        color: #fff;
+      }
+
+      .results {
+        margin-top: 24px;
+        display: grid;
+        gap: 14px;
+        padding: 18px;
+        border-radius: var(--radius);
+        background: var(--accent-soft);
+        border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+        animation: fade-in 0.3s ease both;
+      }
+
+      @keyframes fade-in {
+        from {
+          opacity: 0.4;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+      }
+
+      .row span {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .row strong {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--result);
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .row.total strong {
+        font-size: 1.45rem;
+      }
+
+      .hint {
+        margin: 16px 0 0;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      @media (max-width: 420px) {
+        body {
+          padding: 16px;
+          place-items: start center;
+        }
+
+        .app {
+          padding: 22px 18px 18px;
+        }
+
+        .tips {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <div>
+          <h1>Tip Calculator</h1>
+          <p class="subtitle">Split the bill without the mental math.</p>
+        </div>
+        <button
+          type="button"
+          class="theme-toggle"
+          id="themeToggle"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" />
+            <path
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5Z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </header>
+
+      <form id="tipForm" autocomplete="off">
+        <div class="field">
+          <label for="bill">Bill amount</label>
+          <div class="input-wrap">
+            <span class="prefix">$</span>
+            <input
+              class="has-prefix"
+              id="bill"
+              name="bill"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              inputmode="decimal"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="tip">Tip percentage</label>
+          <div class="tips" role="group" aria-label="Quick tip percentages">
+            <button type="button" class="tip-btn" data-tip="10">10%</button>
+            <button type="button" class="tip-btn active" data-tip="15">15%</button>
+            <button type="button" class="tip-btn" data-tip="18">18%</button>
+            <button type="button" class="tip-btn" data-tip="20">20%</button>
+          </div>
+          <div class="input-wrap">
+            <input
+              class="has-suffix"
+              id="tip"
+              name="tip"
+              type="number"
+              min="0"
+              step="0.1"
+              value="15"
+              placeholder="15"
+              inputmode="decimal"
+            />
+            <span class="suffix">%</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="people">Number of people</label>
+          <input
+            id="people"
+            name="people"
+            type="number"
+            min="1"
+            step="1"
+            value="1"
+            placeholder="1"
+            inputmode="numeric"
+          />
+        </div>
+      </form>
+
+      <section class="results" aria-live="polite">
+        <div class="row">
+          <span>Tip amount</span>
+          <strong id="tipAmount">$0.00</strong>
+        </div>
+        <div class="row total">
+          <span>Total</span>
+          <strong id="totalAmount">$0.00</strong>
+        </div>
+        <div class="row">
+          <span>Per person</span>
+          <strong id="perPerson">$0.00</strong>
+        </div>
+      </section>
+
+      <p class="hint">Updates as you type</p>
+    </main>
+
+    <script>
+      const billInput = document.getElementById("bill");
+      const tipInput = document.getElementById("tip");
+      const peopleInput = document.getElementById("people");
+      const tipAmountEl = document.getElementById("tipAmount");
+      const totalAmountEl = document.getElementById("totalAmount");
+      const perPersonEl = document.getElementById("perPerson");
+      const themeToggle = document.getElementById("themeToggle");
+      const tipButtons = document.querySelectorAll(".tip-btn");
+
+      const currency = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      });
+
+      function parseNonNegative(value) {
+        const n = Number.parseFloat(value);
+        return Number.isFinite(n) && n >= 0 ? n : 0;
+      }
+
+      function parsePeople(value) {
+        const n = Number.parseInt(value, 10);
+        return Number.isFinite(n) && n >= 1 ? n : 1;
+      }
+
+      function calculate() {
+        const bill = parseNonNegative(billInput.value);
+        const tipPercent = parseNonNegative(tipInput.value);
+        const people = parsePeople(peopleInput.value);
+
+        const tipAmount = bill * (tipPercent / 100);
+        const total = bill + tipAmount;
+        const perPerson = total / people;
+
+        tipAmountEl.textContent = currency.format(tipAmount);
+        totalAmountEl.textContent = currency.format(total);
+        perPersonEl.textContent = currency.format(perPerson);
+      }
+
+      function syncTipButtons() {
+        const current = tipInput.value;
+        tipButtons.forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.tip === current);
+        });
+      }
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("tip-calculator-theme", theme);
+        themeToggle.setAttribute(
+          "aria-label",
+          theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+        );
+      }
+
+      const savedTheme = localStorage.getItem("tip-calculator-theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      applyTheme(savedTheme || (prefersDark ? "dark" : "light"));
+
+      themeToggle.addEventListener("click", () => {
+        const next =
+          document.documentElement.getAttribute("data-theme") === "dark"
+            ? "light"
+            : "dark";
+        applyTheme(next);
+      });
+
+      tipButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          tipInput.value = btn.dataset.tip;
+          syncTipButtons();
+          calculate();
+        });
+      });
+
+      [billInput, tipInput, peopleInput].forEach((input) => {
+        input.addEventListener("input", () => {
+          if (input === tipInput) syncTipButtons();
+          calculate();
+        });
+      });
+
+      syncTipButtons();
+      calculate();
+    </script>
+  </body>
+</html>
